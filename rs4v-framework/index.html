@@ -1,1 +1,234 @@
-To be updated
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RS4V Framework Portfolio</title>
+
+  <!-- Font Awesome for icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+
+  <style>
+    /* Reset & base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      background: #f9f9f9;
+      color: #333;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    /* Logo */
+    .logo {
+      margin-bottom: 30px;
+    }
+    .logo img {
+      max-width: 250px;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-block;
+      margin: 10px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      text-decoration: none;
+      color: #fff;
+      background-color: #007bff;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    /* Visit GitHub button: black */
+    .btn.github {
+      background-color: #000;
+    }
+    .btn.github:hover {
+      background-color: #333;
+    }
+    /* Report Issue button: red */
+    .btn.issue {
+      background-color: #e74c3c;
+    }
+    .btn.issue:hover {
+      background-color: #c0392b;
+    }
+
+    /* Video Container */
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%; /* 16:9 aspect */
+      margin: 30px 0;
+    }
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    /* Modal overlay */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      text-align: left;
+      position: relative;
+    }
+    .modal-content h3 {
+      margin-bottom: 15px;
+    }
+    .modal-content .option {
+      display: block;
+      margin: 8px 0;
+      padding: 10px;
+      background: #f1f1f1;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .modal-content .option:hover {
+      background: #e0e0e0;
+    }
+    .close-btn {
+      position: absolute;
+      right: 12px;
+      top: 8px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo">
+      <img src="https://shravanprojects.github.io/rs4v-framework/logo.png" alt="RS4V Logo">
+    </div>
+
+    <!-- Buttons -->
+    <button class="btn" id="downloadBtn">
+      <i class="fas fa-file-medical"></i> Download Demo DICOM
+    </button>
+
+    <a class="btn github"
+       href="https://github.com/shravankumaruk/rs4v-framework"
+       target="_blank" rel="noopener">
+      <i class="fab fa-github"></i> Visit GitHub
+    </a>
+
+    <a class="btn issue"
+       href="https://github.com/shravankumaruk/rs4v-framework/issues"
+       target="_blank" rel="noopener">
+      <i class="fas fa-exclamation-circle"></i> Report Issue
+    </a>
+
+    <!-- Video Section -->
+    <h2><i class="fas fa-video"></i> Installation Tutorial</h2>
+    <div class="video-wrapper">
+      <iframe
+        src="https://www.youtube.com/embed/7lBsuiZRWm0?si=wXYd-iHXHxdTAAI3"
+        title="RS4V Installation"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+      ></iframe>
+    </div>
+
+    <footer>
+      <p>© 2025 Shravan Kumar UK</p>
+    </footer>
+  </div>
+
+  <!-- Modal -->
+  <div id="downloadModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <h3>Select Demo DICOM Source</h3>
+      <button class="option"
+              onclick="openLink('https://www.dicomlibrary.com/')">
+        1) DICOM Library
+      </button>
+      <button class="option"
+              onclick="openLink('https://www.osirix-viewer.com/resources/dicom-image-library/')">
+        2) OsiriX DICOM Library
+      </button>
+      <button class="option"
+              onclick="openLink('https://nbia.cancerimagingarchive.net/nbia-search/')">
+        3) Cancer Imaging Archive
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('downloadBtn')
+            .addEventListener('click', () => {
+      document.getElementById('downloadModal').style.display = 'block';
+    });
+
+    function closeModal() {
+      document.getElementById('downloadModal').style.display = 'none';
+    }
+
+    function openLink(url) {
+      window.open(url, '_blank', 'noopener');
+      closeModal();
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('downloadModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+  </script>
+</body>
+</html>
