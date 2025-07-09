@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EXIF &amp; PDF Metadata Remover</title>
+
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <!-- piexifjs for JPEG EXIF removal -->
+  <script src="https://unpkg.com/piexifjs"></script>
+  <!-- PDF-Lib for PDF metadata removal -->
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { height: 100%; font-family: Arial, sans-serif; background: #f5f5f5; }
+    .container {
+      display: flex;
+      height: 100%;
+    }
+    .pane {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+    .left {
+      background: #fff;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .drop-zone {
+      width: 100%;
+      max-width: 400px;
+      height: 200px;
+      border: 3px dashed #bbb;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .drop-zone.dragover {
+      border-color: #666;
+      background: #fafafa;
+    }
+    .drop-zone i {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    .drop-zone p {
+      text-align: center;
+    }
+    .file-input {
+      margin-top: 15px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-top: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn:hover { background: #0056b3; }
+    .right {
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview {
+      max-width: 100%;
+      max-height: 70vh;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+      padding: 10px;
+    }
+    .info {
+      margin-top: 15px;
+      text-align: center;
+      color: #555;
+    }
+    .header {
+      position: absolute;
+      top: 10px; left: 50%;
+      transform: translateX(-50%);
+      background: #28a745;
+      color: #fff;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+    .star-link {
+      position: absolute;
+      bottom: 20px;
+      font-size: 16px;
+      text-decoration: none;
+      color: #333;
+      display: flex;
+      align-items: center;
+    }
+    .star-link i {
+      margin-right: 8px;
+      color: #f1c40f;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">🚀 0 Lag Processing</div>
+  <div class="container">
+    <div class="pane left">
+      <div class="drop-zone" id="drop-zone">
+        <div>
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Drag &amp; Drop<br/>or Click to Upload</p>
+        </div>
+      </div>
+      <input type="file" accept=".jpg,.jpeg,.png,.pdf" id="file-input" class="file-input" />
+    </div>
+    <div class="pane right">
+      <div id="output-area">
+        <p class="info">Your cleaned file will appear here.</p>
+      </div>
+    </div>
+  </div>
+
+  <a href="https://github.com/shravankumaruk/exif-jpg-pdf-remover" target="_blank" class="star-link">
+    <i class="fas fa-star"></i> Star on GitHub
+  </a>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const output = document.getElementById('output-area');
+
+    // Highlight on drag over
+    ['dragenter','dragover'].forEach(evt =>
+      dropZone.addEventListener(evt, e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      })
+    );
+    ['dragleave','drop'].forEach(evt =>
+      dropZone.addEventListener(evt, e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      })
+    );
+
+    dropZone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+    async function handleFiles(files) {
+      if (!files.length) return;
+      const file = files[0];
+      const type = file.type;
+      output.innerHTML = '';
+
+      if (type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const dataURL = e.target.result;
+          const cleanDataURL = piexif.remove(dataURL);
+          showResult(cleanDataURL, 'image/jpeg');
+        };
+        reader.readAsDataURL(file);
+      }
+      else if (type === 'application/pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+        // remove all metadata
+        pdfDoc.setTitle('');
+        pdfDoc.setAuthor('');
+        pdfDoc.setSubject('');
+        pdfDoc.setKeywords([]);
+        pdfDoc.setProducer('');
+        pdfDoc.setCreator('');
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        showResult(url, 'application/pdf');
+      }
+      else {
+        output.innerHTML = '<p class="info">Unsupported file type.</p>';
+      }
+    }
+
+    function showResult(url, mime) {
+      const wrap = document.createElement('div');
+      wrap.style.textAlign = 'center';
+
+      // Preview
+      if (mime.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'preview';
+        wrap.appendChild(img);
+      } else if (mime === 'application/pdf') {
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.className = 'preview';
+        wrap.appendChild(iframe);
+      }
+
+      // Download button
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = mime === 'application/pdf' ? 'cleaned.pdf' : 'cleaned.jpg';
+      link.className = 'btn';
+      link.innerHTML = '<i class="fas fa-download"></i> Download Clean File';
+      wrap.appendChild(link);
+
+      output.appendChild(wrap);
+    }
+  </script>
+</body>
+</html>
